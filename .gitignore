@@ -1,0 +1,9 @@
+node_modules/
+dist/
+history/
+output/
+test/
+.venv/
+.claude/
+*.log
+.DS_Store

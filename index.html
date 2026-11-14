@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DUB Korean</title>
+<style>
+:root{--bg:#0d0e13;--panel:#171a23;--panel2:#1f2330;--line:#2a2f40;--fg:#eceef6;--mute:#8b91a8;
+  --acc:#7c8cff;--acc2:#b68cff;--rec:#ff5d6c;--ok:#3ddc97}
+@media (prefers-color-scheme:light){:root{--bg:#f5f6fb;--panel:#fff;--panel2:#f1f2f9;--line:#e1e4f0;--fg:#171a26;--mute:#6b7189;
+  --acc:#5468ff;--acc2:#8b5cf6;--rec:#e5384a;--ok:#12a86b}}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;color:var(--fg);background:var(--bg);
+  font:15px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Apple SD Gothic Neo",system-ui,sans-serif}
+[hidden]{display:none!important}
+button{font:inherit;font-weight:500;color:var(--fg);background:var(--panel2);border:1px solid var(--line);
+  padding:8px 14px;border-radius:10px;cursor:pointer;transition:.15s;white-space:nowrap}
+button:hover{border-color:var(--acc)}
+button:disabled{opacity:.5;cursor:default}
+button.primary{color:#fff;border:0;background:linear-gradient(135deg,var(--acc),var(--acc2))}
+button.rec{color:#fff;border:0;background:var(--rec);animation:pulse 1.3s infinite}
+button.ghost{background:none;border-color:transparent;color:var(--mute);padding:6px 8px}
+@keyframes pulse{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--rec) 25%,transparent)}}
+input[type=url],select{font:inherit;color:var(--fg);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;outline:none}
+input[type=url]:focus{border-color:var(--acc)}
+input[type=file]{display:none}
+
+/* 시작 화면 */
+#start{min-height:100%;display:grid;place-items:center;padding:24px}
+.hero{width:min(560px,100%);text-align:center}
+.hero h1{font-size:28px;letter-spacing:-.03em;margin:0 0 6px}
+.hero p{color:var(--mute);margin:0 0 24px}
+.urlrow{display:flex;gap:8px}
+.urlrow input{flex:1;min-width:0}
+.drop{margin-top:14px;border:1.5px dashed var(--line);border-radius:14px;padding:26px;color:var(--mute);cursor:pointer;transition:.15s}
+.drop:hover,.drop.over{border-color:var(--acc);color:var(--fg)}
+#smsg{margin-top:14px;min-height:1.4em;color:var(--mute);font-size:14px}
+
+#recent{margin-top:28px;text-align:left}
+#recent h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:0 0 8px;font-weight:600}
+.proj{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
+.proj:hover{border-color:var(--acc)}
+.proj .pt{flex:1;min-width:0}
+.proj .pt b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.proj .pt small{color:var(--mute)}
+.setup,#setup{font-size:13px}
+#setup{position:fixed;top:12px;right:12px;width:290px;z-index:5;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;box-shadow:0 10px 30px -12px #000}
+#setup b{display:block;margin-bottom:6px}
+#setup .row{display:flex;align-items:center;gap:8px;margin:5px 0}
+#setup .row span:first-child{flex:1}
+#setup .bar2{height:4px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:3px}
+#setup .bar2 i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .4s}
+#setup small{color:var(--mute);display:block;margin-top:6px}
+#setup button{padding:3px 9px;font-size:12px}
+.ok{color:var(--ok)}.bad{color:var(--rec)}
+.copy{position:fixed;left:0;right:0;bottom:14px;text-align:center;color:var(--mute);font-size:12px;opacity:.75;pointer-events:none}
+/* 편집 화면 */
+#edit{max-width:920px;margin:0 auto;padding:16px 20px 110px}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.top b{font-size:16px}
+.stage{position:relative;background:#000;border-radius:14px;overflow:hidden}
+#cap{position:absolute;left:8%;right:8%;bottom:56px;text-align:center;color:#fff;font-weight:600;font-size:18px;line-height:1.35;text-shadow:0 1px 4px #000,0 0 2px #000;pointer-events:none;white-space:pre-line}
+video{display:block;width:100%;max-height:48vh}
+.tl-row{display:flex;align-items:center;gap:10px;margin:12px 0 6px}
+.time{font:600 14px ui-monospace,Menlo,monospace;color:var(--mute);min-width:56px}
+.hintline{color:var(--mute);font-size:13px}
+#tl{position:relative;height:54px;border-radius:12px;background:var(--panel);border:1px solid var(--line);
+  cursor:crosshair;user-select:none;touch-action:none;overflow:hidden}
+.seg{position:absolute;top:7px;bottom:7px;border-radius:7px;background:color-mix(in srgb,var(--acc) 40%,transparent);border:1px solid var(--acc)}
+.seg.done{background:color-mix(in srgb,var(--ok) 40%,transparent);border-color:var(--ok)}
+.seg.sel{box-shadow:0 0 0 2px var(--fg)}
+#head{position:absolute;top:0;bottom:0;width:2px;background:var(--rec);pointer-events:none}
+#list{display:grid;gap:8px;margin-top:18px}
+#list>small{color:var(--mute);text-align:center;padding:18px}
+.item{display:flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 12px;cursor:pointer}
+.item.sel{border-color:var(--acc)}
+.item .t{flex:1;font-variant-numeric:tabular-nums}
+.item .t small{color:var(--mute)}
+.badge{color:var(--ok);font-size:12px;margin-left:6px}
+.item button{padding:6px 11px;font-size:13px}
+
+/* 하단 고정 바 */
+.bar{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);
+  border-top:1px solid var(--line);padding:12px 20px}
+.bar .in{max-width:920px;margin:0 auto;display:flex;align-items:center;gap:12px}
+#msg{flex:1;color:var(--mute);font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis}
+#msg a{color:var(--acc);font-weight:600}
+#settings{position:absolute;left:20px;bottom:64px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;
+  box-shadow:0 10px 30px -10px #000;font-size:14px}
+</style>
+</head>
+<body>
+
+<div id="setup" hidden></div>
+
+<section id="start">
+  <div class="hero">
+    <h1 data-i18n="title"></h1>
+    <p data-i18n="tagline"></p>
+    <div class="urlrow">
+      <input type="url" id="url" list="urls" data-i18n-ph="urlPh"><datalist id="urls"></datalist>
+      <button class="primary" id="load" data-i18n="load"></button>
+    </div>
+    <label class="drop" id="drop" style="display:block">
+      <span data-i18n="drop"></span>
+      <input type="file" id="file" accept="video/*">
+    </label>
+    <div id="smsg"></div>
+    <div id="recent" hidden>
+      <h3 data-i18n="recent"></h3>
+      <div id="rlist"></div>
+    </div>
+  </div>
+  <footer class="copy">Copyright © 혜리쌤</footer>
+</section>
+
+<section id="edit" hidden>
+  <div class="top"><b data-i18n="title"></b><span style="flex:1"></span><select id="subsel" hidden></select><button class="ghost" id="newvid" data-i18n="newvid"></button></div>
+  <div class="stage"><video id="v" controls></video><div id="cap"></div></div>
+  <div class="tl-row"><span class="time" id="cur">0:00.0</span>
+    <span class="hintline" data-i18n="hint"></span></div>
+  <div id="tl"><div id="head"></div></div>
+  <div id="list"><small data-i18n="empty"></small></div>
+</section>
+
+<div class="bar" id="bar" hidden>
+  <div class="in">
+    <button class="ghost" id="gear" data-i18n-title="settings">⚙︎</button>
+    <div id="msg"></div>
+    <button id="prev" data-i18n="prev"></button>
+    <button class="primary" id="exp" data-i18n="exp"></button>
+  </div>
+  <div id="settings" hidden>
+    <label><span data-i18n="origSound"></span><br>
+      <select id="mode">
+        <option value="bg" selected data-i18n="mBg"></option>
+        <option value="mute" data-i18n="mMute"></option>
+        <option value="duck" data-i18n="mDuck"></option>
+      </select></label>
+  </div>
+</div>
+
+<script>
+
+// ---------- 다국어: 시스템 언어가 한국어면 한국어, 아니면 영어 ----------
+// 우선순위: ?lang= (앱이 시스템 1순위 언어를 넘겨줌) → 브라우저 언어. 한국어가 아니면 영어.
+const LANG=((new URLSearchParams(location.search).get('lang')||navigator.language||'en').toLowerCase().startsWith('ko'))?'ko':'en';
+const I18N={
+ ko:{title:'DUB Korean',tagline:'영상에서 원하는 장면만 골라 내 목소리로 더빙하세요',urlPh:'영상 URL 붙여넣기 (YouTube 등)',load:'불러오기',
+  drop:'또는 영상 파일을 여기에 놓거나 클릭해서 선택',recent:'최근 작업',newvid:'다른 영상',hint:'타임라인을 드래그해서 더빙할 구간을 선택하세요',
+  empty:'선택한 구간이 여기에 표시됩니다.',settings:'설정',prev:'🎧 전체 미리듣기',exp:'내보내기',origSound:'원본 소리',
+  mBg:'목소리만 교체 (배경음·효과음 유지)',mMute:'구간 전체 끄기',mDuck:'구간 전체 작게',
+  subOff:'자막 끄기',subLang:l=>`자막: ${l}`,downloading:'영상 다운로드 중… (길면 시간이 걸립니다)',err:'오류: ',sec:'초',
+  recBadge:'● 녹음됨',stop:'■ 중지',rerec:'다시 녹음',rec:'● 녹음',orig:'원본',mine:'내 녹음',
+  needMic:'마이크 권한이 필요합니다.',recording:'녹음 중… 구간 끝에서 자동 종료됩니다.',
+  silent:r=>`⚠ 녹음이 거의 무음입니다 (${r}초). 마이크 권한/입력 장치를 확인하세요.`,
+  recDone:(r,s,p)=>`녹음 완료 · 길이 ${r}초 / 구간 ${s}초 · 소리 크기 ${p}%`,unreadable:'⚠ 녹음 파일을 읽을 수 없습니다: ',
+  ago:{now:'방금',m:n=>n+'분 전',h:n=>n+'시간 전',d:n=>n+'일 전'},projInfo:(n,r,a)=>`구간 ${n}개 · 녹음 ${r}개 · ${a}`,noTitle:'제목 없음',
+  confirmDel:'이 작업 기록을 삭제할까요? (저장된 영상과 녹음도 함께 삭제됩니다)',loadingProj:'불러오는 중…',loadedProj:n=>`이전 작업을 불러왔습니다 (구간 ${n}개).`,
+  videoPrep:'영상 준비 중…',needRec:'먼저 녹음을 한 구간이 필요합니다.',pvPrep:'준비 중…',bgSep:'배경음 분리 중… (구간당 수 초, 처음 한 번만)',
+  pvStop:'■ 미리듣기 중지',pvOn:'미리듣기 중…',minRec:'최소 한 구간을 녹음하세요.',upSeg:id=>`구간 ${id} 업로드 중…`,
+  mergeBg:'목소리 분리 + 합치는 중… (수십 초)',merge:'합치는 중…',done:'완료: ',dl:' 다운로드',
+  setupTitle:'필요한 구성요소 준비',cmp:{ytdlp:'URL 다운로드 도구',deno:'YouTube 보호 해제 도구',demucs:'목소리 분리 (Demucs)'},
+  stReady:'✓ 준비됨',stMissing:'대기 중',stError:'오류',stRetry:'다시 시도',stInstall:'설치',
+  setupNote:'Demucs는 용량이 커서(약 1~2GB) 시간이 걸립니다. 그동안에도 다른 기능은 쓸 수 있고, 끝나면 "목소리만 교체"가 켜집니다.',needTool:'다운로드 도구를 준비하는 중입니다. 잠시 후 다시 시도하세요.',
+  e:{demucs:'Demucs가 설치되지 않았습니다 (.venv 필요).',url:'http(s) URL만 가능합니다.',noRec:'녹음된 구간이 없습니다.'}},
+ en:{title:'DUB Korean',tagline:'Pick scenes in a video and dub just those with your own voice',urlPh:'Paste a video URL (YouTube, etc.)',load:'Load',
+  drop:'or drop a video file here, or click to choose one',recent:'Recent projects',newvid:'Other video',hint:'Drag on the timeline to select a segment to dub',
+  empty:'Selected segments will appear here.',settings:'Settings',prev:'🎧 Preview all',exp:'Export',origSound:'Original audio',
+  mBg:'Replace voice only (keep music & effects)',mMute:'Mute whole segment',mDuck:'Lower whole segment',
+  subOff:'Subtitles off',subLang:l=>`Subtitles: ${l}`,downloading:'Downloading video… (long videos take a while)',err:'Error: ',sec:'s',
+  recBadge:'● Recorded',stop:'■ Stop',rerec:'Re-record',rec:'● Record',orig:'Original',mine:'My take',
+  needMic:'Microphone permission is required.',recording:'Recording… stops automatically at the end of the segment.',
+  silent:r=>`⚠ The recording is almost silent (${r}s). Check microphone permission / input device.`,
+  recDone:(r,s,p)=>`Recorded · length ${r}s / segment ${s}s · level ${p}%`,unreadable:'⚠ Could not read the recording: ',
+  ago:{now:'just now',m:n=>n+' min ago',h:n=>n+' h ago',d:n=>n+' d ago'},projInfo:(n,r,a)=>`${n} segment${n===1?'':'s'} · ${r} recorded · ${a}`,noTitle:'Untitled',
+  confirmDel:'Delete this project? (The saved video and recordings are deleted too.)',loadingProj:'Loading…',loadedProj:n=>`Previous project loaded (${n} segment${n===1?'':'s'}).`,
+  videoPrep:'Preparing video…',needRec:'Record at least one segment first.',pvPrep:'Preparing…',bgSep:'Separating background audio… (a few seconds per segment, first time only)',
+  pvStop:'■ Stop preview',pvOn:'Previewing…',minRec:'Record at least one segment.',upSeg:id=>`Uploading segment ${id}…`,
+  mergeBg:'Separating voice + mixing… (tens of seconds)',merge:'Mixing…',done:'Done: ',dl:' Download',
+  setupTitle:'Setting up required components',cmp:{ytdlp:'URL download tool',deno:'YouTube helper runtime',demucs:'Voice separation (Demucs)'},
+  stReady:'✓ Ready',stMissing:'Waiting',stError:'Error',stRetry:'Retry',stInstall:'Install',
+  setupNote:'Demucs is large (about 1–2 GB) and takes a while. You can keep using other features; "Replace voice only" turns on when it finishes.',needTool:'The download tool is still being prepared. Please try again shortly.',
+  e:{demucs:'Demucs is not installed (.venv required).',url:'Only http(s) URLs are supported.',noRec:'No recorded segments.'}}
+};
+const T=I18N[LANG], t=(k,...a)=>typeof T[k]==='function'?T[k](...a):T[k];
+// 서버 오류 문구(영어 고정)를 현재 언어로 매핑
+const ERRMAP=[[/Demucs is not installed/,'demucs'],[/Only http\(s\)/,'url'],[/No recorded segments/,'noRec']];
+const tr=m=>{for(const [re,k] of ERRMAP) if(re.test(m)) return T.e[k]; return m};
+document.documentElement.lang=LANG; document.title=T.title;
+document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));
+document.querySelectorAll('[data-i18n-ph]').forEach(e=>e.placeholder=t(e.dataset.i18nPh));
+document.querySelectorAll('[data-i18n-title]').forEach(e=>e.title=t(e.dataset.i18nTitle));
+
+const $=id=>document.getElementById(id);
+const v=$('v'), tl=$('tl'), head=$('head'), list=$('list'), msg=$('msg');
+let segs=[], sel=null, uid=0, file=null, fromUrl=false, uploaded=false;
+let pid=null, title='', srcUrl='';
+let recorder=null, stream=null, recChunks=[], recSeg=null;
+
+const fmt=t=>{const m=Math.floor(t/60);return m+':'+(t%60).toFixed(1).padStart(4,'0')};
+const dur=()=>v.duration||1;
+
+let cues=[];
+function parseVtt(t){
+  const out=[]; let prev=[];
+  t.replace(/\r/g,'').split(/\n\n+/).forEach(b=>{
+    const ls=b.split('\n'), i=ls.findIndex(l=>l.includes('-->')); if(i<0)return;
+    const m=ls[i].match(/(?:(\d+):)?(\d+):(\d+)\.(\d+)\s*-->\s*(?:(\d+):)?(\d+):(\d+)\.(\d+)/); if(!m)return;
+    const sec=(h,mi,s,ms)=>(+h||0)*3600+ +mi*60+ +s+ +ms/1000;
+    const txt=ls.slice(i+1).map(l=>l.replace(/<[^>]+>/g,'').trim()).filter(Boolean);
+    const fresh=txt.filter(l=>!prev.includes(l)); prev=txt;      // 자동자막의 반복 줄 제거
+    if(fresh.length) out.push({s:sec(m[1],m[2],m[3],m[4]),e:sec(m[5],m[6],m[7],m[8]),t:fresh.join('\n')});
+  });
+  return out;
+}
+async function setSubs(langs){
+  const sel=$('subsel'); cues=[]; $('cap').textContent='';
+  sel.hidden=!langs.length; if(!langs.length) return;
+  sel.innerHTML=`<option value="">${t('subOff')}</option>`+langs.map(l=>`<option value="${l}">${t('subLang',l)}</option>`).join('');
+  sel.value='';
+}
+$('subsel').onchange=async e=>{
+  cues=[]; $('cap').textContent='';
+  if(e.target.value) cues=parseVtt(await (await fetch('/sub/'+encodeURIComponent(e.target.value))).text());
+};
+function showCap(){ if(!cues.length){return} const t=v.currentTime, c=cues.find(c=>t>=c.s&&t<c.e); $('cap').textContent=c?c.t:'' }
+
+function openEditor(src){
+  v.src=src; segs=[]; sel=null; msg.textContent=''; pid=null;
+  $('start').hidden=true; $('edit').hidden=false; $('bar').hidden=false; render();
+}
+$('newvid').onclick=async()=>{v.pause();await flushSave();showRecent();$('start').hidden=false;$('edit').hidden=true;$('bar').hidden=true;$('smsg').textContent=''};
+$('gear').onclick=()=>{$('settings').hidden=!$('settings').hidden};
+
+function pickFile(f){ if(!f)return; setSubs([]); file=f; fromUrl=false; uploaded=false; openEditor(URL.createObjectURL(f)); title=f.name; srcUrl=''; }
+$('file').onchange=e=>pickFile(e.target.files[0]);
+const dz=$('drop');
+['dragover','dragenter'].forEach(n=>dz.addEventListener(n,e=>{e.preventDefault();dz.classList.add('over')}));
+['dragleave','drop'].forEach(n=>dz.addEventListener(n,e=>{e.preventDefault();dz.classList.remove('over')}));
+dz.addEventListener('drop',e=>pickFile(e.dataTransfer.files[0]));
+
+async function loadUrl(){
+  const u=$('url').value.trim(); if(!u)return;
+  $('load').disabled=true; $('smsg').textContent=t('downloading');
+  try{
+    const r=await fetch('/fetch',{method:'POST',body:JSON.stringify({url:u})});
+    const j=await r.json(); if(j.error)throw new Error(j.error);
+    file=null; fromUrl=true; openEditor('/video?'+Date.now()); setSubs(j.subs||[]); title=j.title||u; srcUrl=u;
+  }catch(e){$('smsg').textContent=t('err')+tr(e.message)}
+  $('load').disabled=false;
+}
+$('load').onclick=loadUrl;
+$('url').onkeydown=e=>{if(e.key==='Enter')loadUrl()};
+
+function addSeg(a,b){
+  if(b<a)[a,b]=[b,a];
+  if(b-a<0.3) return;
+  segs.push({id:++uid,start:a,end:b,blob:null});
+  segs.sort((x,y)=>x.start-y.start); sel=uid; render(); scheduleSave();
+}
+
+// 타임라인: 클릭=이동, 드래그=구간 생성
+let drag=null;
+const xt=e=>{const r=tl.getBoundingClientRect();return Math.min(Math.max((e.clientX-r.left)/r.width,0),1)*dur()};
+tl.onpointerdown=e=>{ if(!v.duration)return; tl.setPointerCapture(e.pointerId); drag={a:xt(e),b:xt(e)} };
+tl.onpointermove=e=>{ if(drag){drag.b=xt(e);render()} };
+tl.onpointerup=()=>{ if(!drag)return; const d=drag; drag=null;
+  if(Math.abs(d.b-d.a)<0.3){v.currentTime=d.a;render()} else addSeg(d.a,d.b) };
+
+function render(){
+  tl.querySelectorAll('.seg').forEach(n=>n.remove());
+  const pct=t=>(t/dur()*100)+'%';
+  const draw=(s,cls)=>{const d=document.createElement('div');d.className='seg '+cls;
+    d.style.left=pct(s.start);d.style.width=pct(s.end-s.start);tl.appendChild(d)};
+  segs.forEach(s=>draw(s,(s.blob?'done ':'')+(s.id===sel?'sel':'')));
+  if(drag) draw({start:Math.min(drag.a,drag.b),end:Math.max(drag.a,drag.b)},'');
+  head.style.left=pct(v.currentTime||0);
+
+  if(!segs.length){list.innerHTML=`<small>${t('empty')}</small>`;return}
+  list.innerHTML='';
+  segs.forEach((s,i)=>{
+    const d=document.createElement('div'); d.className='item'+(s.id===sel?' sel':'');
+    const isRec=recSeg===s.id;
+    d.innerHTML=`<span class="t">${i+1}. ${fmt(s.start)} – ${fmt(s.end)} <small>${(s.end-s.start).toFixed(1)}${t('sec')}</small>${s.blob?`<span class="badge">${t('recBadge')}</span>`:''}</span>`;
+    const b=(txt,cls,fn)=>{const x=document.createElement('button');x.textContent=txt;if(cls)x.className=cls;x.onclick=ev=>{ev.stopPropagation();fn()};d.appendChild(x)};
+    b(isRec?t('stop'):(s.blob?t('rerec'):t('rec')),isRec?'rec':'primary',()=>isRec?stopRec():startRec(s));
+    b(t('orig'),'',()=>playOrig(s));
+    if(s.blob) b(t('mine'),'',()=>playDub(s));
+    b('✕','ghost',()=>{segs=segs.filter(x=>x!==s);render();scheduleSave()});
+    d.onclick=()=>{sel=s.id;v.currentTime=s.start;render()};
+    list.appendChild(d);
+  });
+}
+
+// 구간 끝에서 멈추는 리스너는 항상 하나만 유지 (이전 구간의 리스너가 남아 다음 녹음/재생을 끊는 문제 방지)
+let curUntil=null;
+function clearUntil(){ if(curUntil){v.removeEventListener('timeupdate',curUntil);curUntil=null} }
+function until(s,fn){ clearUntil(); const h=()=>{if(v.currentTime>=s.end){clearUntil();fn()}}; curUntil=h; v.addEventListener('timeupdate',h) }
+function playOrig(s){ v.muted=false; v.currentTime=s.start; v.play(); until(s,()=>v.pause()) }
+function playDub(s){ v.muted=true; v.currentTime=s.start;
+  const a=new Audio(URL.createObjectURL(s.blob)); v.play(); a.play();
+  until(s,()=>{v.pause();a.pause();v.muted=false}) }
+
+async function startRec(s){
+  try{ stream=await navigator.mediaDevices.getUserMedia({audio:true}) }
+  catch{ msg.textContent=t('needMic'); return }
+  recChunks=[]; recorder=new MediaRecorder(stream); recSeg=s.id;
+  recorder.ondataavailable=e=>recChunks.push(e.data);
+  recorder.onstop=()=>{ clearUntil(); s.blob=new Blob(recChunks,{type:recorder.mimeType}); delete dubBuf[s.id]; delete bgBuf[s.id]; s.saved=false; scheduleSave();
+    stream.getTracks().forEach(t=>t.stop()); recSeg=null; v.pause(); v.muted=false; render(); checkRec(s) };
+  v.muted=true; v.currentTime=s.start; render();
+  for(let n=3;n>0;n--){msg.textContent=`${n}…`;await new Promise(r=>setTimeout(r,700))}
+  msg.textContent=t('recording');
+  await v.play();            // 영상이 실제로 재생을 시작한 뒤 녹음 시작 → 구간과 녹음이 어긋나지 않게
+  recorder.start(); until(s,stopRec);
+}
+// 녹음 결과 점검: 길이와 소리 크기를 보여주고, 무음이면 경고
+async function checkRec(s){
+  try{
+    const buf=await AC().decodeAudioData(await s.blob.arrayBuffer());
+    let peak=0; for(let c=0;c<buf.numberOfChannels;c++){const d=buf.getChannelData(c);for(let i=0;i<d.length;i+=16)peak=Math.max(peak,Math.abs(d[i]))}
+    const seg=(s.end-s.start).toFixed(1), rec=buf.duration.toFixed(1);
+    msg.textContent = peak<0.01
+      ? t('silent',rec)
+      : t('recDone',rec,seg,Math.round(peak*100));
+  }catch(e){ msg.textContent=t('unreadable')+e.message }
+}
+function stopRec(){ if(recorder&&recorder.state!=='inactive'){recorder.stop()} }
+
+// ---------- 구성요소 설치 상태 ----------
+let setupSt=null, wantBg=true;
+function applyModes(){
+  const ready=setupSt&&setupSt.demucs.state==='ready';
+  const o=[...$('mode').options].find(x=>x.value==='bg');
+  o.disabled=!ready;
+  if(!ready&&$('mode').value==='bg'){ $('mode').value='mute' }
+  else if(ready&&wantBg&&!$('mode').dataset.touched){ $('mode').value='bg' }
+}
+$('mode').addEventListener('change',()=>{ $('mode').dataset.touched='1'; wantBg=$('mode').value==='bg' });
+function renderSetup(){
+  const box=$('setup'), st=setupSt; if(!st){ box.hidden=true; return }
+  const all=['ytdlp','deno','demucs'], pending=all.filter(k=>st[k].state!=='ready');
+  box.hidden=!pending.length; if(!pending.length) return;
+  box.innerHTML=`<b>${t('setupTitle')}</b>`+all.map(k=>{
+    const s=st[k]; let right='';
+    if(s.state==='ready') right=`<span class="ok">${t('stReady')}</span>`;
+    else if(s.state==='installing') right=`${s.pct}%`;
+    else if(s.state==='error') right=`<button data-k="${k}">${t('stRetry')}</button>`;
+    else right=`<button data-k="${k}">${t('stInstall')}</button>`;
+    const bar=s.state==='installing'?`<div class="bar2"><i style="width:${s.pct}%"></i></div>`:'';
+    const err=s.state==='error'?`<small class="bad">${String(s.msg).replace(/</g,'&lt;')}</small>`:'';
+    return `<div><div class="row"><span>${T.cmp[k]}</span><span>${right}</span></div>${bar}${err}</div>`}).join('')
+    +(st.demucs.state!=='ready'?`<small>${t('setupNote')}</small>`:'');
+  box.querySelectorAll('button[data-k]').forEach(b=>b.onclick=async()=>{ await fetch('/setup/install',{method:'POST',body:JSON.stringify({name:b.dataset.k})}); pollSetup() });
+}
+let pollT=null;
+async function pollSetup(){
+  clearTimeout(pollT);
+  try{ setupSt=await (await fetch('/setup/status')).json() }catch{}
+  renderSetup(); applyModes();
+  const busy=setupSt&&Object.values(setupSt).some(s=>s.state==='installing');
+  pollT=setTimeout(pollSetup,busy?1500:8000);
+}
+pollSetup();
+
+// ---------- 작업 기록: 자동 저장 / 최근 작업 목록 / 불러오기 ----------
+let saveT=null, chain=Promise.resolve();
+function scheduleSave(){ clearTimeout(saveT); saveT=setTimeout(()=>{chain=chain.then(saveProject)},700) }
+function flushSave(){ clearTimeout(saveT); chain=chain.then(saveProject); return chain }
+async function saveProject(){
+  if(!segs.length&&!pid) return;
+  try{
+    await ensureVideo(true);
+    const r=await fetch('/project/save',{method:'POST',body:JSON.stringify({pid,title,url:srcUrl,
+      segs:segs.map(s=>({id:s.id,start:s.start,end:s.end,hasRec:!!s.blob}))})});
+    const j=await r.json(); pid=j.pid;
+    for(const s of segs) if(s.blob&&!s.saved){ await fetch(`/project/${pid}/rec/${s.id}`,{method:'PUT',body:s.blob}); s.saved=true }
+  }catch(e){ console.warn('저장 실패',e) }
+}
+const ago=ts=>{const m=Math.round((Date.now()-ts)/60000),a=T.ago; return m<1?a.now:m<60?a.m(m):m<1440?a.h(Math.round(m/60)):a.d(Math.round(m/1440))};
+async function showRecent(){
+  let list=[]; try{ list=await (await fetch('/projects')).json() }catch{}
+  $('recent').hidden=!list.length;
+  $('urls').innerHTML=list.filter(p=>p.url).map(p=>`<option value="${p.url.replace(/"/g,'&quot;')}">${(p.title||'').replace(/</g,'&lt;')}</option>`).join('');
+  const box=$('rlist'); box.innerHTML='';
+  list.forEach(p=>{
+    const d=document.createElement('div'); d.className='proj';
+    const rec=p.segs.filter(s=>s.hasRec).length;
+    d.innerHTML=`<div class="pt"><b></b><small>${t('projInfo',p.segs.length,rec,ago(p.updated))}</small></div>`;
+    d.querySelector('b').textContent=p.title||p.url||t('noTitle');
+    const del=document.createElement('button'); del.className='ghost'; del.textContent='✕'; del.title='✕';
+    del.onclick=async e=>{e.stopPropagation(); if(confirm(t('confirmDel'))){await fetch('/project/'+p.pid,{method:'DELETE'});showRecent()}};
+    d.appendChild(del); d.onclick=()=>openProject(p.pid); box.appendChild(d);
+  });
+}
+async function openProject(id){
+  $('smsg').textContent=t('loadingProj');
+  try{
+    const j=await (await fetch('/project/open',{method:'POST',body:JSON.stringify({pid:id})})).json();
+    if(j.error) throw new Error(j.error);
+    file=null; fromUrl=true; openEditor('/video?'+Date.now());
+    pid=j.project.pid; title=j.project.title; srcUrl=j.project.url||'';
+    segs=[]; uid=0;
+    for(const p of j.project.segs){
+      const s={id:p.id,start:p.start,end:p.end,blob:null,saved:true};
+      if(p.hasRec) s.blob=await (await fetch(`/project/${pid}/rec/${p.id}`)).blob();
+      segs.push(s); uid=Math.max(uid,p.id);
+    }
+    sel=null; render(); setSubs(j.subs||[]);
+    msg.textContent=t('loadedProj',segs.length);
+  }catch(e){ $('smsg').textContent=t('err')+tr(e.message) }
+}
+showRecent();
+
+// 전체 미리듣기: 처음부터 재생하면서 녹음된 구간에서는 원본 대신 내 녹음(+배경음)을 재생
+// Audio 엘리먼트 대신 Web Audio로 정확한 시점에 한 번만 시작 (seek 반복으로 생기던 지지직 소리 방지)
+let pv=false, raf=0, ac=null, dubBuf={}, bgBuf={}, act=null;
+const AC=()=>ac||(ac=new (window.AudioContext||window.webkitAudioContext)());
+async function ensureVideo(silent){
+  if(fromUrl||uploaded) return;
+  if(!silent) msg.textContent=t('videoPrep');
+  await fetch('/upload/video',{method:'PUT',body:file}); uploaded=true;
+}
+function stopAct(){ if(act){act.srcs.forEach(x=>{try{x.stop()}catch{}}); act=null} }
+function startAct(s,t){
+  stopAct(); const c=AC(), off=Math.max(0,t-s.start), srcs=[];
+  const bufs=[dubBuf[s.id]]; if($('mode').value==='bg') bufs.push(bgBuf[s.id]);
+  bufs.forEach(b=>{ if(!b||off>=b.duration)return; const n=c.createBufferSource(); n.buffer=b; n.connect(c.destination); n.start(0,off); srcs.push(n) });
+  act={id:s.id,srcs,a0:c.currentTime,t0:t};
+}
+function tick(){
+  if(!pv) return;
+  const t=v.currentTime, s=segs.find(x=>x.blob&&t>=x.start&&t<x.end);
+  if(s&&!v.paused){
+    v.volume=$('mode').value==='duck'?0.15:0;
+    const exp=act?act.t0+(AC().currentTime-act.a0):0;
+    if(!act||act.id!==s.id||Math.abs(t-exp)>0.35) startAct(s,t);
+  }else{ if(!s) v.volume=1; stopAct() }
+  raf=requestAnimationFrame(tick);
+}
+async function setPreview(on){
+  pv=false; cancelAnimationFrame(raf); clearUntil();
+  $('prev').textContent=t('prev');
+  if(!on){ v.pause(); v.volume=1; stopAct(); return }
+  const done=segs.filter(s=>s.blob);
+  if(!done.length){msg.textContent=t('needRec');return}
+  $('prev').disabled=true;
+  try{
+    await AC().resume();
+    msg.textContent=t('pvPrep');
+    for(const s of done) if(!dubBuf[s.id]) dubBuf[s.id]=await AC().decodeAudioData(await s.blob.arrayBuffer());
+    if($('mode').value==='bg'){
+      await ensureVideo();
+      msg.textContent=t('bgSep');
+      const r=await fetch('/bgclips',{method:'POST',body:JSON.stringify({segs:done.map(s=>({id:s.id,start:s.start,end:s.end}))})});
+      const j=await r.json(); if(j.error)throw new Error(j.error);
+      for(const s of done){ const k=j.keys[s.id];
+        if(!bgBuf[s.id]||bgBuf[s.id].k!==k){
+          const buf=await AC().decodeAudioData(await (await fetch('/bg/'+k+'.wav')).arrayBuffer()); buf.k=k; bgBuf[s.id]=buf } }
+    }
+  }catch(e){msg.textContent=t('err')+tr(e.message);$('prev').disabled=false;return}
+  $('prev').disabled=false;
+  pv=true; $('prev').textContent=t('pvStop'); msg.textContent=t('pvOn');
+  v.muted=false; v.currentTime=0; v.play(); tick();
+}
+$('prev').onclick=()=>setPreview(!pv);
+v.addEventListener('ended',()=>pv&&setPreview(false));
+
+v.ontimeupdate=()=>{showCap();$('cur').textContent=fmt(v.currentTime);head.style.left=(v.currentTime/dur()*100)+'%'};
+v.onloadedmetadata=render;
+
+$('exp').onclick=async()=>{
+  const done=segs.filter(s=>s.blob);
+  if(!done.length){msg.textContent=t('minRec');return}
+  $('exp').disabled=true;
+  try{
+    await ensureVideo();
+    for(const s of done){ msg.textContent=t('upSeg',s.id); await fetch('/upload/seg/'+s.id,{method:'PUT',body:s.blob}) }
+    msg.textContent=$('mode').value==='bg'?t('mergeBg'):t('merge');
+    const r=await fetch('/export',{method:'POST',body:JSON.stringify({
+      segs:done.map(s=>({id:s.id,start:s.start,end:s.end})),mode:$('mode').value})});
+    const j=await r.json(); if(j.error)throw new Error(j.error);
+    msg.innerHTML=`${t('done')}<a href="/output/${j.file}">${j.file}${t('dl')}</a>`;
+  }catch(e){msg.textContent=t('err')+tr(e.message)}
+  $('exp').disabled=false;
+};
+</script>
+</body>
+</html>

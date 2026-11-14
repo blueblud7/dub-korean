@@ -1,0 +1,76 @@
+{
+  "name": "dub-korean",
+  "version": "0.1.0",
+  "description": "영상의 선택한 구간만 내 목소리로 더빙하는 데스크톱 앱",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win"
+  },
+  "private": true,
+  "devDependencies": {
+    "electron": "^45.3.2",
+    "electron-builder": "^26.18.0"
+  },
+  "productName": "DUB Korean",
+  "copyright": "Copyright © 혜리쌤",
+  "dependencies": {
+    "ffmpeg-static": "^5.3.0"
+  },
+  "author": "혜리쌤",
+  "build": {
+    "appId": "com.dubkorean.app",
+    "productName": "DUB Korean",
+    "copyright": "Copyright © 혜리쌤",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "server.js",
+      "components.js",
+      "index.html",
+      "assets/icon.png",
+      "package.json",
+      "node_modules/**/*",
+      "!node_modules/electron/**",
+      "!node_modules/electron-builder/**",
+      "!node_modules/.cache/**"
+    ],
+    "asarUnpack": [
+      "node_modules/ffmpeg-static/**"
+    ],
+    "mac": {
+      "category": "public.app-category.video",
+      "icon": "assets/icon.icns",
+      "target": [
+        "dmg"
+      ],
+      "identity": null,
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "DUB Korean needs the microphone to record your dubbing voice."
+      }
+    },
+    "dmg": {
+      "title": "DUB Korean"
+    },
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+  }
+}
