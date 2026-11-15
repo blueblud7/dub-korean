@@ -30,7 +30,8 @@ input[type=file]{display:none}
 #start{min-height:100%;display:grid;place-items:center;padding:24px}
 .hero{width:min(560px,100%);text-align:center}
 .hero h1{font-size:28px;letter-spacing:-.03em;margin:0 0 6px}
-.hero p{color:var(--mute);margin:0 0 24px}
+.hero p{color:var(--mute);margin:0 0 8px}
+.hero p.sub{font-size:14px;opacity:.85;margin:0 0 24px;line-height:1.6}
 .urlrow{display:flex;gap:8px}
 .urlrow input{flex:1;min-width:0}
 .drop{margin-top:14px;border:1.5px dashed var(--line);border-radius:14px;padding:26px;color:var(--mute);cursor:pointer;transition:.15s}
@@ -98,6 +99,7 @@ video{display:block;width:100%;max-height:48vh}
   <div class="hero">
     <h1 data-i18n="title"></h1>
     <p data-i18n="tagline"></p>
+    <p class="sub" data-i18n="tagline2"></p>
     <div class="urlrow">
       <input type="url" id="url" list="urls" data-i18n-ph="urlPh"><datalist id="urls"></datalist>
       <button class="primary" id="load" data-i18n="load"></button>
@@ -112,7 +114,7 @@ video{display:block;width:100%;max-height:48vh}
       <div id="rlist"></div>
     </div>
   </div>
-  <footer class="copy">Copyright © 혜리쌤</footer>
+  <footer class="copy">Created by Mrs. Chun 혜리쌤 · Copyright © 혜리쌤</footer>
 </section>
 
 <section id="edit" hidden>
@@ -147,7 +149,8 @@ video{display:block;width:100%;max-height:48vh}
 // 우선순위: ?lang= (앱이 시스템 1순위 언어를 넘겨줌) → 브라우저 언어. 한국어가 아니면 영어.
 const LANG=((new URLSearchParams(location.search).get('lang')||navigator.language||'en').toLowerCase().startsWith('ko'))?'ko':'en';
 const I18N={
- ko:{title:'DUB Korean',tagline:'영상에서 원하는 장면만 골라 내 목소리로 더빙하세요',urlPh:'영상 URL 붙여넣기 (YouTube 등)',load:'불러오기',
+ ko:{title:'DUB Korean',tagline:'좋아하는 장면을 더빙하며 한국어 말하기를 연습하세요',
+  tagline2:'듣고, 따라 하고, 내 목소리로 대사를 살려 보세요. 더 또렷한 발음과 자연스러운 표현을 익힐 수 있어요.',urlPh:'영상 URL 붙여넣기 (YouTube 등)',load:'불러오기',
   drop:'또는 영상 파일을 여기에 놓거나 클릭해서 선택',recent:'최근 작업',newvid:'다른 영상',hint:'타임라인을 드래그해서 더빙할 구간을 선택하세요',
   empty:'선택한 구간이 여기에 표시됩니다.',settings:'설정',prev:'🎧 전체 미리듣기',exp:'내보내기',origSound:'원본 소리',
   mBg:'목소리만 교체 (배경음·효과음 유지)',mMute:'구간 전체 끄기',mDuck:'구간 전체 작게',
@@ -165,7 +168,8 @@ const I18N={
   stReady:'✓ 준비됨',stMissing:'대기 중',stError:'오류',stRetry:'다시 시도',stInstall:'설치',
   setupNote:'Demucs는 용량이 커서(약 1~2GB) 시간이 걸립니다. 그동안에도 다른 기능은 쓸 수 있고, 끝나면 "목소리만 교체"가 켜집니다.',needTool:'다운로드 도구를 준비하는 중입니다. 잠시 후 다시 시도하세요.',
   e:{demucs:'Demucs가 설치되지 않았습니다 (.venv 필요).',url:'http(s) URL만 가능합니다.',noRec:'녹음된 구간이 없습니다.'}},
- en:{title:'DUB Korean',tagline:'Pick scenes in a video and dub just those with your own voice',urlPh:'Paste a video URL (YouTube, etc.)',load:'Load',
+ en:{title:'DUB Korean',tagline:'Practice speaking Korean by dubbing your favorite scenes',
+  tagline2:'Listen, repeat, and bring each line to life in your own voice—building clearer pronunciation and more natural expression along the way.',urlPh:'Paste a video URL (YouTube, etc.)',load:'Load',
   drop:'or drop a video file here, or click to choose one',recent:'Recent projects',newvid:'Other video',hint:'Drag on the timeline to select a segment to dub',
   empty:'Selected segments will appear here.',settings:'Settings',prev:'🎧 Preview all',exp:'Export',origSound:'Original audio',
   mBg:'Replace voice only (keep music & effects)',mMute:'Mute whole segment',mDuck:'Lower whole segment',

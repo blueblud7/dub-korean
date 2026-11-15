@@ -3,7 +3,7 @@ const { app, BrowserWindow, session, shell, systemPreferences, dialog } = requir
 const path = require('path');
 
 app.setName('DUB Korean');
-app.setAboutPanelOptions({ applicationName: 'DUB Korean', applicationVersion: require('./package.json').version, copyright: 'Copyright © 혜리쌤' });
+app.setAboutPanelOptions({ applicationName: 'DUB Korean', applicationVersion: require('./package.json').version, copyright: 'Copyright © 혜리쌤', credits: 'Created by Mrs. Chun 혜리쌤' });
 process.env.PORT = process.env.PORT || '47831';
 
 // 자동 테스트용 (평소에는 꺼져 있음): 파일을 가짜 마이크로 쓰고, 원격 디버깅 포트로 앱을 제어

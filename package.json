@@ -1,7 +1,7 @@
 {
   "name": "dub-korean",
   "version": "0.1.0",
-  "description": "영상의 선택한 구간만 내 목소리로 더빙하는 데스크톱 앱",
+  "description": "Practice speaking Korean by dubbing your favorite scenes. Created by Mrs. Chun 혜리쌤.",
   "main": "main.js",
   "scripts": {
     "start": "electron .",

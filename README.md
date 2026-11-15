@@ -1,11 +1,13 @@
 # DUB Korean
 
-영상에서 **원하는 구간만 골라 내 목소리로 더빙**하는 데스크톱 앱입니다. (macOS · Windows)
-*Pick segments of a video and dub just those with your own voice.* — [English guide ↓](#english)
+**좋아하는 장면을 더빙하며 한국어 말하기를 연습하세요.**
+듣고, 따라 하고, 내 목소리로 대사를 살려 보세요. 더 또렷한 발음과 자연스러운 표현을 익힐 수 있어요. 영상에서 **원하는 구간만 골라** 내 목소리로 더빙하는 데스크톱 앱입니다. (macOS · Windows)
+
+> **Practice speaking Korean by dubbing your favorite scenes.** Listen, repeat, and bring each line to life in your own voice—building clearer pronunciation and more natural expression along the way. — [English guide ↓](#english)
 
 ![시작 화면](docs/images/ko-1-start.png)
 
-Copyright © 혜리쌤
+Created by Mrs. Chun 혜리쌤 · Copyright © 혜리쌤
 
 ---
 
@@ -125,7 +127,9 @@ git tag v0.1.1 && git push origin v0.1.1
 
 # English guide
 
-**DUB Korean** lets you pick segments of a video and dub just those with your own voice (macOS · Windows).
+**DUB Korean** — practice speaking Korean by dubbing your favorite scenes. Pick segments of a video and dub just those with your own voice (macOS · Windows).
+
+*Created by Mrs. Chun 혜리쌤*
 
 ![Start screen](docs/images/en-1-start.png)
 
